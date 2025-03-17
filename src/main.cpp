@@ -1,6 +1,8 @@
 #include <d2d1.h>
 #include <dwmapi.h>
 #include <dwrite.h>
+#include <minwindef.h>
+#include <windef.h>
 #include <windows.h>
 
 #pragma comment(lib, "d2d1")
@@ -14,6 +16,8 @@ IDWriteFactory *pDWriteFactory = nullptr;
 IDWriteTextFormat *pTextFormat = nullptr;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+FLOAT GetWindowScale(HWND hwnd);
 
 bool InitD2DAndDWrite()
 {
@@ -94,27 +98,30 @@ void OnPaint(HWND hwnd)
     pRenderTarget->BeginDraw();
 
     // Clear baakground to transparent
-    pRenderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
+    // pRenderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
+    pRenderTarget->Clear(D2D1::ColorF(25 / 255.0, 25 / 255.0, 25 / 255.0, 1.0));
 
-    // Set brush color to semi-transparent white
-    pBrush->SetColor(D2D1::ColorF(D2D1::ColorF::White, 0.5f));
+    /*
+    FLOAT scale = GetWindowScale(hwnd);
 
-    // Draw a semi-transparent rectangle
-    pRenderTarget->FillRectangle(D2D1::RectF(50, 50, 400, 300), pBrush);
+    D2D1_RECT_F borderRect = D2D1::RectF( //
+        static_cast<FLOAT>(0),            //
+        static_cast<FLOAT>(0),            //
+        static_cast<FLOAT>(600 / scale),  //
+        static_cast<FLOAT>(600 / scale)   //
+    );
+    pBrush->SetColor(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
+E
+    pRenderTarget->FillRectangle(D2D1::RectF(50, 50, 400, 300), pBrush)
 
-    // Set brush color to opaque red
     pBrush->SetColor(D2D1::ColorF(D2D1::ColorF::Red, 1.0f));
 
-    // Draw a opaque rectangle
     pRenderTarget->FillRectangle(D2D1::RectF(200, 200, 500, 400), pBrush);
 
-    // Set brush color to semi-transparent green
     pBrush->SetColor(D2D1::ColorF(D2D1::ColorF::Green, 0.3f));
 
-    // Draw a semi-transparent rectangle
     pRenderTarget->FillRectangle(D2D1::RectF(300, 100, 600, 250), pBrush);
 
-    // Set brush color to opaque white
     pBrush->SetColor(D2D1::ColorF(D2D1::ColorF::White, 1.0f)); //
     pRenderTarget->DrawTextW(                                  //
         L"Transparent Window and Direct2D",                    //
@@ -123,6 +130,7 @@ void OnPaint(HWND hwnd)
         D2D1::RectF(5, 5, 600, 200),                           //
         pBrush                                                 //
     );
+    */
 
     HRESULT hr = pRenderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET)
@@ -148,7 +156,7 @@ HWND CreateTransparentWindow(HINSTANCE hInstance)
                                wc.lpszClassName,     //
                                L"TransparentWindow", //
                                WS_POPUP,             //
-                               100, 100, 800, 600,   //
+                               100, 100, 600, 600,   //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (hwnd)
@@ -234,4 +242,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         pD2DFactory->Release();
 
     return (int)msg.wParam;
+}
+
+FLOAT GetWindowScale(HWND hwnd)
+{
+    UINT dpi = GetDpiForWindow(hwnd);
+    FLOAT scale = dpi / 96.0f;
+    return scale;
 }

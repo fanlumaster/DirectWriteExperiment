@@ -4,6 +4,8 @@ CompileFlags:
       -D_UNICODE,
       "-std=c++17",
       "-IC:\\Users\\SonnyCalcr\\EDisk\\CppCodes\\Win32Codes\\DirectWriteExperiment\\includes", # you should replace this to your own include path of this project
+      "-IC:\\Users\\SonnyCalcr\\.nuget\\packages\\microsoft.web.webview2\\1.0.3124.44\\build\\native\\include",
+      "-IC:\\Users\\SonnyCalcr\\.nuget\\packages\\microsoft.windows.implementationlibrary\\1.0.240803.1\\include",
       -Wno-microsoft-goto,
       -Wno-nonportable-include-path,
       -Wno-microsoft-extra-qualification,
