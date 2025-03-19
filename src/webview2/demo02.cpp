@@ -1,33 +1,29 @@
 /*
  * Work with WebView2
-*/
-
+ */
 #include "WebView2.h"
+#include <dwmapi.h>
 #include <stdlib.h>
 #include <string>
 #include <tchar.h>
 #include <windows.h>
 #include <wrl.h>
 
-// The main window class name.
-static TCHAR szWindowClass[] = _T("DesktopApp");
+#pragma comment(lib, "dwmapi.lib")
 
-// The string that appears in the application's title bar.
+static TCHAR szWindowClass[] = _T("DesktopApp");
 static TCHAR szTitle[] = _T("WebView sample");
 
 HINSTANCE hInst = 0;
 
 using namespace Microsoft::WRL;
 
-// don't care memory leak for now
 static ICoreWebView2Controller *webviewController = nullptr;
 static ICoreWebView2 *webview = nullptr;
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
                                 LPARAM lParam)
 {
-    TCHAR greeting[] = _T("Hello, Windows desktop!");
-
     switch (message)
     {
     case WM_SIZE:
@@ -113,6 +109,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
         return 1;
     }
 
+    BOOL useDarkMode = TRUE;
+    DwmSetWindowAttribute(             //
+        hWnd,                          //
+        DWMWA_USE_IMMERSIVE_DARK_MODE, //
+        &useDarkMode,                  //
+        sizeof(useDarkMode)            //
+    );
+
     // The parameters to ShowWindow explained:
     // hWnd: the value returned from CreateWindow
     // nCmdShow: the fourth parameter from WinMain
@@ -146,7 +150,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                             settings->put_IsScriptEnabled(TRUE);
                             settings->put_AreDefaultScriptDialogsEnabled(TRUE);
                             settings->put_IsWebMessageEnabled(TRUE);
-                            // settings->Release();
+                            settings->Release();
 
                             // Resize WebView to fit the bounds of the parent
                             // window
@@ -155,8 +159,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                             webviewController->put_Bounds(bounds);
 
                             // Schedule an async task to navigate to Bing
-                            auto hr =
-                                webview->Navigate(L"https://fanlumaster.github.io/");
+                            // auto hr = webview->Navigate(
+                            //     L"https://fanlumaster.github.io/");
+                            auto hr = webview->NavigateToString(
+                                L"<div>fjalshglasjlgfhaslkgjaslkdfhalshg</div>");
 
                             // <NavigationEvents>
                             // Step 4 - Navigation events
