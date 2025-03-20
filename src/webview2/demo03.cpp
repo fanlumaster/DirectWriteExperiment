@@ -7,6 +7,8 @@
 #include <string>
 #include <tchar.h>
 #include <windows.h>
+#include <winnt.h>
+#include <winuser.h>
 #include <wrl.h>
 #include <wrl/client.h>
 
@@ -15,6 +17,48 @@
 static TCHAR szWindowClass[] = _T("DesktopApp");
 static TCHAR szTitle[] = _T("WebView sample");
 
+static std::wstring HTMLString = LR"(
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      background: transparent;
+      /*background-image: url('https://appassets/background.jpg'); */
+      /*background-size: cover; */
+    }
+    div {
+      border: 0px solid #ccc;
+      background-color: #f9f9f9;
+      transition: background-color 0.3s ease; 
+      background-position: center;
+      transition: background-color 0.3s ease;
+    }
+
+    div:hover {
+      border: 1px solid #ccc;
+      background-color: #ffeb3b;
+      border-color: #ffc107;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div>1. 量子</div>
+  <div>2. 毛笔</div>
+  <div>3. 什么</div>
+  <div>4. 可恶</div>
+  <div>5. 竟然</div>
+  <div>6. 你说</div>
+  <div>7. 好吧</div>
+  <div>8. 难道</div>
+</body>
+</html>
+)";
+
 HINSTANCE hInst = 0;
 
 using namespace Microsoft::WRL;
@@ -22,6 +66,7 @@ using namespace Microsoft::WRL;
 static ICoreWebView2Controller *webviewController = nullptr;
 static ICoreWebView2 *webview = nullptr;
 ComPtr<ICoreWebView2_3> webview3;
+ComPtr<ICoreWebView2Controller2> webviewController2;
 
 void LogMessageW(const wchar_t *message)
 {
@@ -121,65 +166,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     return 0;
 }
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
-                     _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+void InitWebview(HWND hWnd)
 {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-    WNDCLASSEX wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wcex))
-    {
-        MessageBox(NULL, _T("Call to RegisterClassEx failed!"),
-                   _T("Windows Desktop Guided Tour"), NULL);
-
-        return 1;
-    }
-
-    // Store instance handle in our global variable
-    hInst = hInstance;
-
-    HWND hWnd = CreateWindowEx(WS_EX_LAYERED,        //
-                               szWindowClass,        //
-                               L"TransparentWindow", //
-                               WS_POPUP,             //
-                               100,                  //
-                               100,                  //
-                               600,                  //
-                               337,                  //
-                               nullptr, nullptr, hInstance, nullptr);
-
-    if (!hWnd)
-    {
-        MessageBox(NULL, _T("Call to CreateWindow failed!"),
-                   _T("Windows Desktop Guided Tour"), NULL);
-
-        return 1;
-    }
-
-    BOOL useDarkMode = TRUE;
-    DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode,
-                          sizeof(useDarkMode));
-
-    // The parameters to ShowWindow explained:
-    // hWnd: the value returned from CreateWindow
-    // nCmdShow: the fourth parameter from WinMain
-    ShowWindow(hWnd, nCmdShow);
-    UpdateWindow(hWnd);
-
     CreateCoreWebView2EnvironmentWithOptions(
         nullptr, nullptr, nullptr,
         Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
@@ -242,54 +230,23 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                                 );
                             }
 
+                            if (controller->QueryInterface(
+                                    IID_PPV_ARGS(&webviewController2)) == S_OK)
+                            {
+                                COREWEBVIEW2_COLOR backgroundColor = {0, 0, 0,
+                                                                      0};
+                                webviewController2->put_DefaultBackgroundColor(
+                                    backgroundColor);
+                            }
+
                             // Resize WebView to fit the bounds of the parent
                             // window
                             RECT bounds;
                             GetClientRect(hWnd, &bounds);
                             webviewController->put_Bounds(bounds);
                             // Navigate to a simple HTML string
-                            auto hr = webview->NavigateToString(LR"(
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    body {
-      background: transparent;
-      background-image: url('https://appassets/background.jpg');
-      background-size: cover;
-    }
-    div {
-      border: 0px solid #ccc;
-      background-color: #f9f9f9;
-      background-color: rgba(249, 249, 249, 0.8); 
-      transition: background-color 0.3s ease; 
-      background-position: center;
-      transition: background-color 0.3s ease;
-    }
-
-    div:hover {
-      border: 1px solid #ccc;
-      background-color: #ffeb3b;
-      border-color: #ffc107;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div>1. 量子</div>
-  <div>2. 毛笔</div>
-  <div>3. 什么</div>
-  <div>4. 可恶</div>
-  <div>5. 竟然</div>
-  <div>6. 你说</div>
-  <div>7. 好吧</div>
-  <div>8. 难道</div>
-</body>
-</html>
-)");
+                            auto hr =
+                                webview->NavigateToString(HTMLString.c_str());
                             if (FAILED(hr))
                             {
                                 MessageBox(hWnd,
@@ -297,7 +254,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                                            L"Error", MB_OK);
                             }
 
-                            webview->OpenDevToolsWindow();
+                            // webview->OpenDevToolsWindow();
 
                             return S_OK;
                         })
@@ -305,8 +262,70 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                 return S_OK;
             })
             .Get());
+}
 
-    // webview->OpenDevToolsWindow();
+int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
+                     _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+{
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+    WNDCLASSEX wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wcex))
+    {
+        MessageBox(NULL, _T("Call to RegisterClassEx failed!"),
+                   _T("Windows Desktop Guided Tour"), NULL);
+
+        return 1;
+    }
+
+    // Store instance handle in our global variable
+    hInst = hInstance;
+
+    HWND hWnd = CreateWindowEx(WS_EX_LAYERED,        //
+                               szWindowClass,        //
+                               L"TransparentWindow", //
+                               WS_POPUP,             //
+                               100,                  //
+                               100,                  //
+                               600,                  //
+                               337,                  //
+                               nullptr, nullptr, hInstance, nullptr);
+
+    if (!hWnd)
+    {
+        MessageBox(NULL, _T("Call to CreateWindow failed!"),
+                   _T("Windows Desktop Guided Tour"), NULL);
+
+        return 1;
+    }
+
+    // DWM_BLURBEHIND bb = {0};
+    // bb.dwFlags = DWM_BB_ENABLE;
+    // bb.fEnable = true;
+    // bb.hRgnBlur = NULL;
+    // DwmEnableBlurBehindWindow(hWnd, &bb);
+
+    // The parameters to ShowWindow explained:
+    // hWnd: the value returned from CreateWindow
+    // nCmdShow: the fourth parameter from WinMain
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
+
+    InitWebview(hWnd);
 
     // Main message loop:
     MSG msg;
