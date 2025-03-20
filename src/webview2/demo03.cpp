@@ -24,7 +24,7 @@ static std::wstring HTMLString = LR"(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数字与文字对应表</title>
+  <title>垂直候选框</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -50,47 +50,136 @@ static std::wstring HTMLString = LR"(
     }
 
     .row {
-      display: flex;
       justify-content: space-between;
       padding: 2px;
     }
 
-    .row:hover {
+    .cand:hover {
+      border-radius: 6px;
+      background-color: #2c2c2c;
+    }
+
+    .row-wrapper {
+      position: relative;
+    }
+
+    .cand:hover::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 16px;
+      width: 3px;
+      background: linear-gradient(to bottom, #ff7eb3, #ff758c, #ff5a5f);
+      border-radius: 8px;
+    }
+
+    .first {
       background-color: #2c2c2c;
       border-radius: 6px;
     }
 
+    .first::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 16px;
+      width: 3px;
+      background: linear-gradient(to bottom, #ff7eb3, #ff758c, #ff5a5f);
+      border-radius: 8px;
+    }
+
     .text {
+      padding-left: 8px;
       color: #e9e8e8;
     }
   </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const firstRowWrapper = document.querySelector(".first");
+      const pinyinRowWrapper = document.querySelector(".pinyin");
+      if (!firstRowWrapper) return;
+
+      const rowWrappers = document.querySelectorAll(".row");
+      let isHovered = false;
+
+      rowWrappers.forEach(wrapper => {
+        wrapper.addEventListener("mouseenter", () => {
+          isHovered = true;
+          if (document.querySelector(".row:hover") == firstRowWrapper) {
+            firstRowWrapper.classList.add("first");
+          } else if (document.querySelector(".row:hover") != pinyinRowWrapper) {
+            firstRowWrapper.classList.remove("first");
+          }
+        });
+
+        wrapper.addEventListener("mouseleave", () => {
+          setTimeout(() => {
+            if (!document.querySelector(".row:hover")) {
+              if (!firstRowWrapper.classList.contains("first"))
+                firstRowWrapper.classList.add("first");
+            }
+          }, 10);
+        });
+      });
+    });
+  </script>
 </head>
 
 <body>
   <div class="container">
-    <div class="row">
-      <div class="text">1. 你说</div>
+    <div class="row pinyin">
+      <div class="text">ni'uo</div>
     </div>
-    <div class="row">
-      <div class="text">2. 笔画</div>
+    <div class="row-wrapper">
+      <div class="row first">
+        <div class="text">1. 你说</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">3. 量子</div>
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">2. 笔画</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">4. 牛魔</div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">3. 量子</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">5. 仙人</div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">4. 牛魔</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">6. 可恨</div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">5. 仙人</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">7. 木槿</div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">6. 可恨</div>
+      </div>
     </div>
-    <div class="row">
-      <div class="text">7. 无量</div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">7. 木槿</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">8. 无量</div>
+      </div>
     </div>
   </div>
 </body>
@@ -340,8 +429,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                                WS_POPUP,             //
                                100,                  //
                                100,                  //
-                               200,                  //
-                               350,                  //
+                               (108 + 15) * 1.5,     //
+                               (228 + 15) * 1.5,     //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
