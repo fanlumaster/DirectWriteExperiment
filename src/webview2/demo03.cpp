@@ -19,43 +19,79 @@ static TCHAR szTitle[] = _T("WebView sample");
 
 static std::wstring HTMLString = LR"(
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>数字与文字对应表</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
       background: transparent;
-      /*background-image: url('https://appassets/background.jpg'); */
-      /*background-size: cover; */
-    }
-    div {
-      border: 0px solid #ccc;
-      background-color: #f9f9f9;
-      transition: background-color 0.3s ease; 
-      background-position: center;
-      transition: background-color 0.3s ease;
     }
 
-    div:hover {
-      border: 1px solid #ccc;
-      background-color: #ffeb3b;
-      border-color: #ffc107;
-      cursor: pointer;
+    .container {
+      margin-top: 10px;
+      margin-left: 10px;
+      background-color: #fff;
+      padding: 2px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100px;
+      user-select: none;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px;
+    }
+
+    .row:hover {
+      background-color: #f1f1f1;
+      border-radius: 6px;
+    }
+
+    .text {
+      color: #555;
     }
   </style>
 </head>
+
 <body>
-  <div>1. 量子</div>
-  <div>2. 毛笔</div>
-  <div>3. 什么</div>
-  <div>4. 可恶</div>
-  <div>5. 竟然</div>
-  <div>6. 你说</div>
-  <div>7. 好吧</div>
-  <div>8. 难道</div>
+  <div class="container">
+    <div class="row">
+      <div class="text">1. 你说</div>
+    </div>
+    <div class="row">
+      <div class="text">2. 笔画</div>
+    </div>
+    <div class="row">
+      <div class="text">3. 量子</div>
+    </div>
+    <div class="row">
+      <div class="text">4. 牛魔</div>
+    </div>
+    <div class="row">
+      <div class="text">5. 仙人</div>
+    </div>
+    <div class="row">
+      <div class="text">6. 可恨</div>
+    </div>
+    <div class="row">
+      <div class="text">7. 木槿</div>
+    </div>
+    <div class="row">
+      <div class="text">7. 无量</div>
+    </div>
+  </div>
 </body>
+
 </html>
 )";
 
@@ -301,8 +337,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                                WS_POPUP,             //
                                100,                  //
                                100,                  //
-                               600,                  //
-                               337,                  //
+                               200,                  //
+                               350,                  //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)

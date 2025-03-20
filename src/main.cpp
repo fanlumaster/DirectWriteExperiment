@@ -99,7 +99,7 @@ void OnPaint(HWND hwnd)
 
     // Clear baakground to transparent
     // pRenderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
-    pRenderTarget->Clear(D2D1::ColorF(25 / 255.0, 25 / 255.0, 25 / 255.0, 1.0));
+    pRenderTarget->Clear(D2D1::ColorF(25 / 255.0, 25 / 255.0, 25 / 255.0, 0.5));
 
     /*
     FLOAT scale = GetWindowScale(hwnd);
