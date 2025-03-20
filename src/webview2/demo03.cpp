@@ -191,8 +191,8 @@ HINSTANCE hInst = 0;
 
 using namespace Microsoft::WRL;
 
-static ICoreWebView2Controller *webviewController = nullptr;
-static ICoreWebView2 *webview = nullptr;
+static ComPtr<ICoreWebView2Controller> webviewController;
+static ComPtr<ICoreWebView2> webview;
 ComPtr<ICoreWebView2_3> webview3;
 ComPtr<ICoreWebView2Controller2> webviewController2;
 
@@ -229,7 +229,7 @@ void UpdateHtmlContentWithJavaScript(ICoreWebView2 *webview,
     }
 }
 
-void MeasureDomUpdateTime(ICoreWebView2 *webview)
+void MeasureDomUpdateTime(ComPtr<ICoreWebView2> webview)
 {
     std::wstring script =
         LR"(document.body.innerHTML = '<div>1. 原来</div> <div>2. 如此</div> <div>3. 竟然</div> <div>4. 这样</div> <div>5. 可恶</div> <div>6. 棋盘</div> <div>7. 磨合</div> <div>8. 樱花</div> </body>';)";
@@ -273,17 +273,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     //     MeasureDomUpdateTime(webview);
     //     break;
     case WM_DESTROY:
-        // Release WebView2 objects
-        if (webviewController != nullptr)
-        {
-            webviewController->Release();
-            webviewController = nullptr;
-        }
-        if (webview != nullptr)
-        {
-            webview->Release();
-            webview = nullptr;
-        }
         PostQuitMessage(0);
         break;
     default:
@@ -324,10 +313,9 @@ void InitWebview(HWND hWnd)
                                 return E_FAIL;
                             }
 
-                            controller->AddRef();
                             webviewController = controller;
                             webviewController->get_CoreWebView2(
-                                reinterpret_cast<ICoreWebView2 **>(&webview));
+                                webview.GetAddressOf());
 
                             if (webview == nullptr)
                             {
