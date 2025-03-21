@@ -369,6 +369,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
+    // wcex.style =  CS_IME;
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
@@ -391,14 +392,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
     // Store instance handle in our global variable
     hInst = hInstance;
 
-    HWND hWnd = CreateWindowEx(WS_EX_LAYERED,        //
-                               szWindowClass,        //
-                               L"TransparentWindow", //
-                               WS_POPUP,             //
-                               100,                  //
-                               100,                  //
-                               (108 + 15) * 1.5,     //
-                               (246 + 15) * 1.5,     //
+    HWND hWnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TOOLWINDOW, //
+                               szWindowClass,                    //
+                               L"TransparentWindow",             //
+                               WS_POPUP,                         //
+                               100,                              //
+                               100,                              //
+                               (108 + 15) * 1.5,                 //
+                               (246 + 15) * 1.5,                 //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
@@ -418,12 +419,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
     // The parameters to ShowWindow explained:
     // hWnd: the value returned from CreateWindow
     // nCmdShow: the fourth parameter from WinMain
-    ShowWindow(hWnd, nCmdShow);
+    MoveWindow(hWnd, 1000, -1000, (108 + 15) * 1.5, (246 + 15) * 1.5, TRUE);
+    ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
 
     InitWebview(hWnd);
 
-    int state = SW_HIDE;
+    int state = SW_SHOW;
 
     // Main message loop:
     MSG msg;
@@ -433,6 +435,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
         {
             ShowWindow(hWnd, state);
             state = state == SW_HIDE ? SW_SHOW : SW_HIDE;
+            MoveWindow(hWnd, 100, 100, (108 + 15) * 1.5, (246 + 15) * 1.5,
+                       TRUE);
         }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
