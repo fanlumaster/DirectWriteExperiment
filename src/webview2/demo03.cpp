@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <synchapi.h>
 #include <tchar.h>
 #include <windows.h>
 #include <winnt.h>
@@ -13,6 +14,8 @@
 #include <wrl/client.h>
 
 #pragma comment(lib, "dwmapi.lib")
+
+#define HOTKEY_ID 1
 
 static TCHAR szWindowClass[] = _T("DesktopApp");
 static TCHAR szTitle[] = _T("WebView sample");
@@ -52,18 +55,19 @@ static std::wstring HTMLString = LR"(
     .row {
       justify-content: space-between;
       padding: 2px;
+      margin-top: 2px;
     }
 
     .cand:hover {
       border-radius: 6px;
-      background-color: #2c2c2c;
+      background-color: #414141;
     }
 
     .row-wrapper {
       position: relative;
     }
 
-    .cand:hover::before {
+    /* .cand:hover::before {
       content: "";
       position: absolute;
       left: 0;
@@ -73,10 +77,10 @@ static std::wstring HTMLString = LR"(
       width: 3px;
       background: linear-gradient(to bottom, #ff7eb3, #ff758c, #ff5a5f);
       border-radius: 8px;
-    }
+    } */
 
     .first {
-      background-color: #2c2c2c;
+      background-color: #3e3e3eb9;
       border-radius: 6px;
     }
 
@@ -98,35 +102,6 @@ static std::wstring HTMLString = LR"(
     }
   </style>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const firstRowWrapper = document.querySelector(".first");
-      const pinyinRowWrapper = document.querySelector(".pinyin");
-      if (!firstRowWrapper) return;
-
-      const rowWrappers = document.querySelectorAll(".row");
-      let isHovered = false;
-
-      rowWrappers.forEach(wrapper => {
-        wrapper.addEventListener("mouseenter", () => {
-          isHovered = true;
-          if (document.querySelector(".row:hover") == firstRowWrapper) {
-            firstRowWrapper.classList.add("first");
-          } else if (document.querySelector(".row:hover") != pinyinRowWrapper) {
-            firstRowWrapper.classList.remove("first");
-          }
-        });
-
-        wrapper.addEventListener("mouseleave", () => {
-          setTimeout(() => {
-            if (!document.querySelector(".row:hover")) {
-              if (!firstRowWrapper.classList.contains("first"))
-                firstRowWrapper.classList.add("first");
-            }
-          }, 10);
-        });
-      });
-    });
   </script>
 </head>
 
@@ -136,7 +111,7 @@ static std::wstring HTMLString = LR"(
       <div class="text">ni'uo</div>
     </div>
     <div class="row-wrapper">
-      <div class="row first">
+      <div class="row cand first">
         <div class="text">1. 你说</div>
       </div>
     </div>
@@ -269,15 +244,12 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         };
 
         break;
-    // case WM_MOVE:
-    //     MeasureDomUpdateTime(webview);
-    //     break;
-    case WM_DESTROY:
+    case WM_DESTROY: {
         PostQuitMessage(0);
         break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
-        break;
     }
 
     return 0;
@@ -385,6 +357,14 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
+    // Register Ctrl + Alt + F12 hotkey
+    if (!RegisterHotKey(nullptr, HOTKEY_ID, MOD_CONTROL | MOD_ALT, VK_F12))
+    {
+        MessageBox(nullptr, L"Cannot Register Hotkey！", L"Error",
+                   MB_ICONERROR);
+        return 1;
+    }
+
     WNDCLASSEX wcex;
 
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -418,7 +398,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                                100,                  //
                                100,                  //
                                (108 + 15) * 1.5,     //
-                               (228 + 15) * 1.5,     //
+                               (246 + 15) * 1.5,     //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
@@ -443,10 +423,17 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 
     InitWebview(hWnd);
 
+    int state = SW_HIDE;
+
     // Main message loop:
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        if (msg.message == WM_HOTKEY && msg.wParam == HOTKEY_ID)
+        {
+            ShowWindow(hWnd, state);
+            state = state == SW_HIDE ? SW_SHOW : SW_HIDE;
+        }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
