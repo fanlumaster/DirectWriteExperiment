@@ -376,7 +376,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
 #endif
             inflateCandidateWindow(str);
         }
-        return 0;
+        return 1;
     }
     case WM_ACTIVATE: {
         if (LOWORD(wParam) != WA_INACTIVE)
