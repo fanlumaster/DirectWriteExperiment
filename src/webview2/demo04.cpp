@@ -176,55 +176,59 @@ static std::wstring HTMLString = LR"(
 
 static std::wstring BodyString = LR"(
   <div class="container">
+    <!--0Anchor-->
     <div class="row pinyin">
       <div class="text">{0}</div>
     </div>
+    <!--1Anchor-->
     <div class="row-wrapper">
       <div class="row cand first">
         <div class="text">{1}</div>
       </div>
     </div>
+    <!--2Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{2}</div>
       </div>
     </div>
-
+    <!--3Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{3}</div>
       </div>
     </div>
-
+    <!--4Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{4}</div>
       </div>
     </div>
-
+    <!--5Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{5}</div>
       </div>
     </div>
-
+    <!--6Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{6}</div>
       </div>
     </div>
-
+    <!--7Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{7}</div>
       </div>
     </div>
-
+    <!--8Anchor-->
     <div class="row-wrapper">
       <div class="row cand">
         <div class="text">{8}</div>
       </div>
     </div>
+    <!--9Anchor-->
   </div>
 )";
 
@@ -290,7 +294,6 @@ void MeasureDomUpdateTime(ComPtr<ICoreWebView2> webview)
 
 void inflateCandidateWindow(std::wstring &str)
 {
-    // 1. 切割 str
     std::wstringstream wss(str);
     std::wstring token;
     std::vector<std::wstring> words;
@@ -300,16 +303,35 @@ void inflateCandidateWindow(std::wstring &str)
         words.push_back(token);
     }
 
-    // 2. 保证有 9 个元素，不足的填充空字符串
+    int size = words.size();
+
     while (words.size() < 9)
     {
         words.push_back(L"");
     }
 
-    // 3. 使用 fmt::wformat 进行格式化
-    std::wstring result =
-        fmt::format(BodyString, words[0], words[1], words[2], words[3],
-                    words[4], words[5], words[6], words[7], words[8]);
+    std::wstring result = fmt::format( //
+        BodyString,                    //
+        words[0],                      //
+        words[1],                      //
+        words[2],                      //
+        words[3],                      //
+        words[4],                      //
+        words[5],                      //
+        words[6],                      //
+        words[7],                      //
+        words[8]                       //
+    );                                 //
+
+    if (size < 9)
+    {
+        result = result.substr(                                         //
+                     0,                                                 //
+                     result.find(fmt::format(L"<!--{}Anchor-->", size)) //
+                     )                                                  //
+                 +                                                      //
+                 L"</div>";                                             //
+    }
 
     UpdateHtmlContentWithJavaScript(webview, result);
 }
@@ -336,14 +358,22 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         if (pcds->dwData == 0)
         {
             POINT *pt = (POINT *)pcds->lpData;
-            MoveWindow(hWnd, pt->x, pt->y, (108 + 15) * 1.5, (246 + 15) * 1.5,
-                       TRUE);
+            MoveWindow(           //
+                hWnd,             //
+                pt->x,            //
+                pt->y + 3,        //
+                (108 + 15) * 1.5, //
+                (246 + 15) * 1.5, //
+                TRUE              //
+            );                    //
         }
         else if (pcds->dwData == 1)
         {
             WCHAR *p = (WCHAR *)pcds->lpData;
             std::wstring str = p;
+#ifdef FANY_DEBUG
             LogMessageW(str.c_str());
+#endif
             inflateCandidateWindow(str);
         }
         return 0;
@@ -485,7 +515,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
-    // wcex.style =  CS_IME;
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
@@ -528,16 +557,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
         return 1;
     }
 
-    // DWM_BLURBEHIND bb = {0};
-    // bb.dwFlags = DWM_BB_ENABLE;
-    // bb.fEnable = true;
-    // bb.hRgnBlur = NULL;
-    // DwmEnableBlurBehindWindow(hWnd, &bb);
-
-    // The parameters to ShowWindow explained:
-    // hWnd: the value returned from CreateWindow
-    // nCmdShow: the fourth parameter from WinMain
-    MoveWindow(hWnd, 100, 100, (108 + 15) * 1.5, (246 + 15) * 1.5, TRUE);
+    MoveWindow(hWnd, -1000, 100, (108 + 15) * 1.5, (246 + 15) * 1.5, TRUE);
     ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
 
@@ -545,7 +565,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 
     int state = SW_SHOW;
 
-    // Main message loop:
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {

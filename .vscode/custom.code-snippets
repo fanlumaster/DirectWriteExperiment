@@ -1,0 +1,11 @@
+{
+  "Debug snippets": {
+    "scope": "c,cpp",
+    "prefix": "debugf",
+    "body": [
+      "#ifdef FANY_DEBUG",
+      "#endif",
+    ],
+    "description": "Add debug macro"
+  }
+}

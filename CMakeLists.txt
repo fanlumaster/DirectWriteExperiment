@@ -13,6 +13,10 @@ add_definitions(
     /DUNICODE=1
 )
 
+# add_definitions(
+#     /DFANY_DEBUG=1
+# )
+
 include_directories("./includes/")
 
 set(HEADER_FILES

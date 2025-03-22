@@ -2,6 +2,7 @@ CompileFlags:
   Add: [
       -DUNICODE,
       -D_UNICODE,
+      -DFANY_DEBUG,
       "-std=c++17",
       "-IC:\\Users\\SonnyCalcr\\EDisk\\CppCodes\\Win32Codes\\DirectWriteExperiment\\includes", # you should replace this to your own include path of this project
       "-IC:\\Users\\SonnyCalcr\\EDisk\\CppCodes\\Win32Codes\\DirectWriteExperiment\\fmt\\include", # you should replace this to your own include path of fmt
