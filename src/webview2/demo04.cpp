@@ -1,13 +1,17 @@
 #include "WebView2.h"
+#include "fmt/core.h"
+#include "fmt/xchar.h"
 #include <chrono>
 #include <dwmapi.h>
 #include <fstream>
 #include <intsafe.h>
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 #include <string>
 #include <synchapi.h>
 #include <tchar.h>
+#include <vector>
 #include <windows.h>
 #include <winnt.h>
 #include <winuser.h>
@@ -173,52 +177,52 @@ static std::wstring HTMLString = LR"(
 static std::wstring BodyString = LR"(
   <div class="container">
     <div class="row pinyin">
-      <div class="text">ni'uo</div>
+      <div class="text">{0}</div>
     </div>
     <div class="row-wrapper">
       <div class="row cand first">
-        <div class="text">1. 你说</div>
+        <div class="text">{1}</div>
       </div>
     </div>
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">2. 笔画</div>
-      </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">3. 量子</div>
+        <div class="text">{2}</div>
       </div>
     </div>
 
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">4. 牛魔</div>
+        <div class="text">{3}</div>
       </div>
     </div>
 
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">5. 仙人</div>
+        <div class="text">{4}</div>
       </div>
     </div>
 
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">6. 可恨</div>
+        <div class="text">{5}</div>
       </div>
     </div>
 
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">7. 木槿</div>
+        <div class="text">{6}</div>
       </div>
     </div>
 
     <div class="row-wrapper">
       <div class="row cand">
-        <div class="text">8. 无量</div>
+        <div class="text">{7}</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">{8}</div>
       </div>
     </div>
   </div>
@@ -255,7 +259,7 @@ void LogMessageW(const wchar_t *message)
     }
 }
 
-void UpdateHtmlContentWithJavaScript(ICoreWebView2 *webview,
+void UpdateHtmlContentWithJavaScript(ComPtr<ICoreWebView2> webview,
                                      const std::wstring &newContent)
 {
     if (webview != nullptr)
@@ -282,6 +286,32 @@ void MeasureDomUpdateTime(ComPtr<ICoreWebView2> webview)
     std::wstring message =
         L"DOM update time: " + std::to_wstring(duration.count()) + L" μs";
     LogMessageW(message.c_str());
+}
+
+void inflateCandidateWindow(std::wstring &str)
+{
+    // 1. 切割 str
+    std::wstringstream wss(str);
+    std::wstring token;
+    std::vector<std::wstring> words;
+
+    while (std::getline(wss, token, L','))
+    {
+        words.push_back(token);
+    }
+
+    // 2. 保证有 9 个元素，不足的填充空字符串
+    while (words.size() < 9)
+    {
+        words.push_back(L"");
+    }
+
+    // 3. 使用 fmt::wformat 进行格式化
+    std::wstring result =
+        fmt::format(BodyString, words[0], words[1], words[2], words[3],
+                    words[4], words[5], words[6], words[7], words[8]);
+
+    UpdateHtmlContentWithJavaScript(webview, result);
 }
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
@@ -314,6 +344,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
             WCHAR *p = (WCHAR *)pcds->lpData;
             std::wstring str = p;
             LogMessageW(str.c_str());
+            inflateCandidateWindow(str);
         }
         return 0;
     }
