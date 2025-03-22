@@ -2,6 +2,7 @@
 #include <chrono>
 #include <dwmapi.h>
 #include <fstream>
+#include <intsafe.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
@@ -17,7 +18,14 @@
 
 #define HOTKEY_ID 1
 
-static TCHAR szWindowClass[] = _T("DesktopApp");
+//
+// Message define
+//
+UINT WM_SHOW_MAIN_WINDOW;
+UINT WM_HIDE_MAIN_WINDOW;
+UINT WM_MOVE_CANDIDATE_WINDOW;
+
+static TCHAR szWindowClass[] = _T("global_candidate_window");
 static TCHAR szTitle[] = _T("WebView sample");
 
 static std::wstring HTMLString = LR"(
@@ -27,7 +35,7 @@ static std::wstring HTMLString = LR"(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>垂直候选框</title>
+  <title>Vertical Candidate Window</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -162,6 +170,60 @@ static std::wstring HTMLString = LR"(
 </html>
 )";
 
+static std::wstring BodyString = LR"(
+  <div class="container">
+    <div class="row pinyin">
+      <div class="text">ni'uo</div>
+    </div>
+    <div class="row-wrapper">
+      <div class="row cand first">
+        <div class="text">1. 你说</div>
+      </div>
+    </div>
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">2. 笔画</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">3. 量子</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">4. 牛魔</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">5. 仙人</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">6. 可恨</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">7. 木槿</div>
+      </div>
+    </div>
+
+    <div class="row-wrapper">
+      <div class="row cand">
+        <div class="text">8. 无量</div>
+      </div>
+    </div>
+  </div>
+)";
+
 HINSTANCE hInst = 0;
 
 using namespace Microsoft::WRL;
@@ -225,25 +287,43 @@ void MeasureDomUpdateTime(ComPtr<ICoreWebView2> webview)
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
                                 LPARAM lParam)
 {
+
+    if (message == WM_SHOW_MAIN_WINDOW)
+    {
+        ShowWindow(hWnd, SW_SHOWNOACTIVATE);
+        return 0;
+    }
+    if (message == WM_HIDE_MAIN_WINDOW)
+    {
+        ShowWindow(hWnd, SW_HIDE);
+        return 0;
+    }
+
     switch (message)
     {
-    case WM_SIZE:
-        if (webviewController != nullptr)
+    case WM_COPYDATA: {
+        COPYDATASTRUCT *pcds = (COPYDATASTRUCT *)lParam;
+        if (pcds->dwData == 0)
         {
-            RECT bounds;
-            GetClientRect(hWnd, &bounds);
-            webviewController->put_Bounds(bounds);
-
-            // Debug: Print window size
-            char buffer[100];
-            sprintf(buffer, "Width: %ld, Height: %ld",
-                    bounds.right - bounds.left, bounds.bottom - bounds.top);
-            OutputDebugStringA(buffer);
-
-            MeasureDomUpdateTime(webview);
-        };
-
+            POINT *pt = (POINT *)pcds->lpData;
+            MoveWindow(hWnd, pt->x, pt->y, (108 + 15) * 1.5, (246 + 15) * 1.5,
+                       TRUE);
+        }
+        else if (pcds->dwData == 1)
+        {
+            WCHAR *p = (WCHAR *)pcds->lpData;
+            std::wstring str = p;
+            LogMessageW(str.c_str());
+        }
+        return 0;
+    }
+    case WM_ACTIVATE: {
+        if (LOWORD(wParam) != WA_INACTIVE)
+        {
+            ShowWindow(hWnd, SW_SHOWNOACTIVATE);
+        }
         break;
+    }
     case WM_DESTROY: {
         PostQuitMessage(0);
         break;
@@ -357,6 +437,11 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
+    WM_SHOW_MAIN_WINDOW = RegisterWindowMessage(L"WM_SHOW_MAIN_WINDOW");
+    WM_HIDE_MAIN_WINDOW = RegisterWindowMessage(L"WM_HIDE_MAIN_WINDOW");
+    WM_MOVE_CANDIDATE_WINDOW =
+        RegisterWindowMessage(L"WM_MOVE_CANDIDATE_WINDOW");
+
     // Register Ctrl + Alt + F12 hotkey
     if (!RegisterHotKey(nullptr, HOTKEY_ID, MOD_CONTROL | MOD_ALT, VK_F12))
     {
@@ -392,16 +477,17 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
     // Store instance handle in our global variable
     hInst = hInstance;
 
-    HWND hWnd =
-        CreateWindowEx(WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, //
-                       szWindowClass,                                       //
-                       L"TransparentWindow",                                //
-                       WS_POPUP,                                            //
-                       100,                                                 //
-                       100,                                                 //
-                       (108 + 15) * 1.5,                                    //
-                       (246 + 15) * 1.5,                                    //
-                       nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TOOLWINDOW |         //
+                                   WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | //
+                                   WS_EX_TOPMOST,                         //
+                               szWindowClass,                             //
+                               L"fanycandidatewindow",                    //
+                               WS_POPUP,                                  //
+                               100,                                       //
+                               100,                                       //
+                               (108 + 15) * 1.5,                          //
+                               (246 + 15) * 1.5,                          //
+                               nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
