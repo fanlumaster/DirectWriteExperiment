@@ -27,7 +27,7 @@ static std::wstring HTMLString = LR"(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>垂直候选框</title>
+  <title>两行候选框</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -39,23 +39,33 @@ static std::wstring HTMLString = LR"(
     }
 
     .container {
-      /* margin-top: 50px;
-      margin-left: 50px; */
       margin-top: 0px;
       margin-left: 0px;
       background-color: #202020;
       padding: 2px;
       border-radius: 6px;
       box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
-      width: 100px;
+      display: flex;
+      flex-direction: column;
+      width: fit-content;
       user-select: none;
       border: 2px solid #9b9b9b2e;
     }
 
-    .row {
-      justify-content: space-between;
+    .pinyin-row {
       padding: 2px;
-      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    .candidates-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .row {
+      padding: 2px;
+      margin: 0 2px;
     }
 
     .cand:hover {
@@ -66,18 +76,6 @@ static std::wstring HTMLString = LR"(
     .row-wrapper {
       position: relative;
     }
-
-    /* .cand:hover::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 16px;
-      width: 3px;
-      background: linear-gradient(to bottom, #ff7eb3, #ff758c, #ff5a5f);
-      border-radius: 8px;
-    } */
 
     .first {
       background-color: #3e3e3eb9;
@@ -98,62 +96,67 @@ static std::wstring HTMLString = LR"(
 
     .text {
       padding-left: 8px;
+      padding-right: 8px;
       color: #e9e8e8;
     }
   </style>
-
-  </script>
 </head>
 
 <body>
   <div class="container">
-    <div class="row pinyin">
-      <div class="text">ni'uo</div>
-    </div>
-    <div class="row-wrapper">
-      <div class="row cand first">
-        <div class="text">1. 你说</div>
+    <div class="pinyin-row">
+      <div class="row pinyin">
+        <div class="text">ni'uo</div>
       </div>
     </div>
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">2. 笔画</div>
+    <div class="candidates-row">
+      <!--1Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand first">
+          <div class="text">1. 你说</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">3. 量子</div>
+      <!--2Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">2. 笔画</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">4. 牛魔</div>
+      <!--3Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">3. 量子</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">5. 仙人</div>
+      <!--4Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">4. 牛魔</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">6. 可恨</div>
+      <!--5Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">5. 仙人</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">7. 木槿</div>
+      <!--6Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">6. 可恨</div>
+        </div>
       </div>
-    </div>
-
-    <div class="row-wrapper">
-      <div class="row cand">
-        <div class="text">8. 无量</div>
+      <!--7Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">7. 木槿</div>
+        </div>
+      </div>
+      <!--8Anchor-->
+      <div class="row-wrapper">
+        <div class="row cand">
+          <div class="text">8. 无量</div>
+        </div>
       </div>
     </div>
   </div>
@@ -399,8 +402,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
                        WS_POPUP,                                            //
                        100,                                                 //
                        100,                                                 //
-                       (108 + 15) * 1.5,                                    //
-                       (246 + 15) * 1.5,                                    //
+                       (599 + 15) * 1.5,                                    //
+                       (62 + 15) * 1.5,                                     //
                        nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
@@ -420,7 +423,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
     // The parameters to ShowWindow explained:
     // hWnd: the value returned from CreateWindow
     // nCmdShow: the fourth parameter from WinMain
-    MoveWindow(hWnd, 100, 100, (108 + 15) * 1.5, (246 + 15) * 1.5, TRUE);
+    MoveWindow(hWnd, 100, 100, (599 + 15) * 1.5, (62 + 15) * 1.5, TRUE);
     ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
 
@@ -436,8 +439,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
         {
             ShowWindow(hWnd, state);
             state = state == SW_HIDE ? SW_SHOW : SW_HIDE;
-            MoveWindow(hWnd, 100, 100, (108 + 15) * 1.5, (246 + 15) * 1.5,
-                       TRUE);
+            MoveWindow(hWnd, 100, 100, (599 + 15) * 1.5, (62 + 15) * 1.5, TRUE);
         }
         TranslateMessage(&msg);
         DispatchMessage(&msg);

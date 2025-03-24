@@ -24,7 +24,7 @@ set(HEADER_FILES
 )
 
 set(SRC_FILES
-    "src/webview2/demo04.cpp"
+    "src/webview2/demo03.cpp"
 )
 
 add_executable(DirectWriteExperiment WIN32
