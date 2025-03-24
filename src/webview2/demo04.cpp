@@ -32,6 +32,8 @@ UINT WM_MOVE_CANDIDATE_WINDOW;
 static TCHAR szWindowClass[] = _T("global_candidate_window");
 static TCHAR szTitle[] = _T("WebView sample");
 
+std::wstring candStr = L"";
+
 static std::wstring HTMLString = LR"(
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -348,6 +350,14 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
     if (message == WM_HIDE_MAIN_WINDOW)
     {
         ShowWindow(hWnd, SW_HIDE);
+        if (candStr.find(L",") == 1)
+        {
+            inflateCandidateWindow(candStr);
+        }
+        else
+        {
+            UpdateHtmlContentWithJavaScript(webview, L"");
+        }
         return 0;
     }
 
@@ -371,6 +381,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
         {
             WCHAR *p = (WCHAR *)pcds->lpData;
             std::wstring str = p;
+            candStr = str;
 #ifdef FANY_DEBUG
             LogMessageW(str.c_str());
 #endif
