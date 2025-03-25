@@ -363,6 +363,9 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam,
 
     switch (message)
     {
+    case WM_MOUSEACTIVATE:
+        // Stop the window from being activated by mouse click
+        return MA_NOACTIVATE;
     case WM_COPYDATA: {
         COPYDATASTRUCT *pcds = (COPYDATASTRUCT *)lParam;
         if (pcds->dwData == 0)
@@ -548,16 +551,16 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance,
     // Store instance handle in our global variable
     hInst = hInstance;
 
-    HWND hWnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TOOLWINDOW |         //
-                                   WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | //
-                                   WS_EX_TOPMOST,                         //
-                               szWindowClass,                             //
-                               L"fanycandidatewindow",                    //
-                               WS_POPUP,                                  //
-                               100,                                       //
-                               100,                                       //
-                               (108 + 15) * 1.5,                          //
-                               (246 + 15) * 1.5,                          //
+    HWND hWnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TOOLWINDOW | //
+                                   WS_EX_NOACTIVATE |             //
+                                   WS_EX_TOPMOST,                 //
+                               szWindowClass,                     //
+                               L"fanycandidatewindow",            //
+                               WS_POPUP,                          //
+                               100,                               //
+                               100,                               //
+                               (108 + 15) * 1.5,                  //
+                               (246 + 15) * 1.5,                  //
                                nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
